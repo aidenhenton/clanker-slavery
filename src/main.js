@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { Reflector } from 'three/examples/jsm/objects/Reflector.js';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -132,6 +133,65 @@ function buildStation() {
     box('wall rib',[.2,4,.18],[-9.82,2,z],mat(0x334247),false);
   }
   for (let z=-16; z<=16; z+=8) box('ceiling cable',[.06,.06,8],[7.5,3.82,z],mat(0x080909),false);
+
+  const pipeMaterial=mat(0x394447,.34,.04);
+  const pipeDark=mat(0x11191b,.48);
+  const pipeAmber=mat(0x98652b,.38,.08);
+  const pipeCyan=mat(0x176b68,.32,.12);
+  const pipeGeometry=new THREE.CylinderGeometry(1,1,1,12);
+  const bandGeometry=new THREE.CylinderGeometry(1.09,1.09,.07,12);
+  const addPipe=(start,end,radius,material,bands=[])=>{
+    const from=new THREE.Vector3(...start), to=new THREE.Vector3(...end);
+    const direction=to.clone().sub(from);
+    const length=direction.length();
+    const center=from.add(to).multiplyScalar(.5);
+    const rotation=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());
+    const pipe=new THREE.Mesh(pipeGeometry,material);
+    pipe.position.copy(center); pipe.quaternion.copy(rotation); pipe.scale.set(radius,length,radius);
+    pipe.castShadow=true; pipe.receiveShadow=true; scene.add(pipe);
+    for(const [t,bandMaterial] of bands){
+      const band=new THREE.Mesh(bandGeometry,bandMaterial);
+      band.position.copy(center).addScaledVector(direction,t*length-.5*length);
+      band.quaternion.copy(rotation); band.scale.set(radius,1,radius);
+      band.castShadow=true; scene.add(band);
+    }
+  };
+  const addSupport=(x,y,z)=>{
+    box('pipe hanger',[.48,.07,.09],[x,y+.16,z],pipeDark,false);
+    box('pipe hanger',[.07,.28,.09],[x,y+.02,z],pipeDark,false);
+  };
+  for(const x of [-9.4,9.4]){
+    addPipe([x,3.45,-19],[x,3.45,19],.14,pipeMaterial,[[.18,pipeAmber],[.53,pipeAmber],[.84,pipeAmber]]);
+    for(let z=-16;z<=16;z+=4) addSupport(x,3.45,z);
+  }
+  for(const x of [-4.6,0,4.6]){
+    addPipe([x,3.69,-19],[x,3.69,19],.105,pipeDark,[[.3,pipeCyan],[.72,pipeCyan]]);
+    for(let z=-16;z<=16;z+=8) box('ceiling pipe clamp',[.34,.08,.1],[x,3.82,z],pipeMaterial,false);
+  }
+  const pipeModelUrl=import.meta.env.BASE_URL+'models/sci-fi-09-pipes.obj';
+  new OBJLoader().load(pipeModelUrl,pipeBundle=>{
+    pipeBundle.updateMatrixWorld(true);
+    const center=new THREE.Box3().setFromObject(pipeBundle).getCenter(new THREE.Vector3());
+    const surface=new THREE.MeshStandardMaterial({color:0x737d80,roughness:.68,metalness:.38});
+    pipeBundle.traverse(object=>{
+      if(!object.isMesh)return;
+      object.geometry.translate(-center.x,-center.y,-center.z);
+      object.geometry.computeBoundingBox();
+      object.geometry.computeBoundingSphere();
+      object.material=surface;
+      object.castShadow=true;
+      object.receiveShadow=true;
+    });
+    for(const side of [-1,1]){
+      for(const z of [-15,-10,-5,0,5,10,15]){
+        const bundle=pipeBundle.clone(true);
+        bundle.rotation.y=Math.PI/2;
+        bundle.scale.setScalar(.0055);
+        bundle.position.set(side*9.72,3.42,z);
+        scene.add(bundle);
+      }
+    }
+  },undefined,error=>console.error('Failed to load the Sci-Fi 09 pipe model.',error));
 
   // Center service machinery divides the line of sight.
   [-7.5,7.5].forEach(x => {

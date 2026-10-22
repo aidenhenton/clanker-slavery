@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;800&family=Share+Tech+Mono&display=swap');
+
+:root { color-scheme: dark; --cyan:#55f5df; --red:#ff3158; --amber:#f7c84b; }
+* { box-sizing:border-box; }
+html, body, #app { width:100%; height:100%; margin:0; overflow:hidden; background:#05070a; }
+body { color:#dceae8; font-family:'Share Tech Mono', monospace; }
+canvas { display:block; }
+
+#hud { position:fixed; inset:0; pointer-events:none; z-index:2; }
+#hud::before { content:''; position:absolute; inset:0; box-shadow:inset 0 0 180px rgba(0,0,0,.82); }
+.vignette { position:absolute; inset:0; background:repeating-linear-gradient(0deg, transparent 0 3px, rgba(0,0,0,.07) 3px 4px); }
+.topbar { position:absolute; left:28px; right:28px; top:22px; display:flex; justify-content:space-between; align-items:start; }
+.location { text-transform:uppercase; letter-spacing:.18em; color:#94aaa8; font-size:11px; }
+.location strong { display:block; color:#fff; font:800 24px 'Barlow Condensed', sans-serif; letter-spacing:.04em; }
+.san { width:190px; text-align:right; }
+.san-label { font-size:10px; letter-spacing:.12em; color:#94aaa8; }
+.san-track { height:5px; margin-top:7px; background:#17201f; overflow:hidden; }
+.san-fill { height:100%; width:100%; background:var(--cyan); box-shadow:0 0 10px var(--cyan); transition:width .18s, background .18s; }
+.objective { position:absolute; left:28px; bottom:28px; max-width:min(430px, calc(100% - 56px)); border-left:2px solid var(--cyan); padding:3px 0 3px 13px; }
+.objective span { display:block; color:var(--cyan); font-size:10px; letter-spacing:.16em; }
+.objective strong { display:block; margin-top:5px; font:600 19px 'Barlow Condensed', sans-serif; letter-spacing:.04em; }
+.status { position:absolute; right:28px; bottom:28px; display:flex; gap:18px; color:#788887; font-size:10px; }
+.status b { color:#dceae8; margin-left:5px; }
+.crosshair { position:absolute; left:50%; top:50%; width:7px; height:7px; transform:translate(-50%,-50%); }
+.crosshair::before,.crosshair::after { content:''; position:absolute; background:rgba(220,234,232,.75); }
+.crosshair::before { width:7px; height:1px; left:0; top:3px; }.crosshair::after { width:1px; height:7px; left:3px; top:0; }
+.prompt { position:absolute; left:50%; bottom:96px; transform:translateX(-50%); padding:9px 13px; color:#fff; background:rgba(5,7,10,.88); border:1px solid #33413f; font-size:11px; opacity:0; transition:opacity .12s; }
+.prompt.visible { opacity:1; }
+.damage { position:absolute; inset:0; background:radial-gradient(circle, transparent 25%, rgba(255,49,88,.5)); opacity:0; transition:opacity .08s; }
+
+.overlay { position:fixed; z-index:10; inset:0; display:grid; place-items:center; background:linear-gradient(90deg, rgba(3,5,7,.97), rgba(3,5,7,.72) 65%, rgba(3,5,7,.9)); }
+.overlay.hidden { display:none; }
+.panel { width:min(680px, calc(100% - 40px)); }
+.kicker { color:var(--cyan); font-size:11px; letter-spacing:.28em; }
+h1 { margin:8px 0 4px; font:800 clamp(58px,12vw,116px)/.78 'Barlow Condensed', sans-serif; letter-spacing:.02em; text-transform:uppercase; }
+h1 em { display:block; color:transparent; -webkit-text-stroke:1px #758784; font-style:normal; }
+.intro { max-width:490px; margin:24px 0 26px; color:#9dadab; font:400 15px/1.65 'Share Tech Mono'; }
+.instructions { display:grid; grid-template-columns:repeat(2,1fr); gap:9px 24px; margin-bottom:28px; color:#aebdbc; font-size:11px; }
+.key { color:var(--cyan); border:1px solid #3d514e; display:inline-grid; min-width:23px; height:23px; place-items:center; margin-right:8px; }
+button { appearance:none; border:0; min-width:190px; height:48px; background:var(--cyan); color:#05110f; font:800 14px 'Barlow Condensed', sans-serif; letter-spacing:.14em; cursor:pointer; clip-path:polygon(0 0,95% 0,100% 30%,100% 100%,5% 100%,0 70%); }
+button:hover { background:#fff; }
+.title-noise { position:absolute; inset:0; overflow:hidden; opacity:.18; pointer-events:none; background-image:linear-gradient(90deg, transparent 49%, rgba(85,245,223,.15) 50%, transparent 51%); background-size:47px 100%; }
+
+#flash { position:absolute; inset:0; background:rgba(85,245,223,.16); opacity:0; pointer-events:none; }
+#flash.fire { animation:flash .28s; }
+@keyframes flash { 30% { opacity:1 } 100% { opacity:0 } }
+#mobile { display:none; position:absolute; inset:0; pointer-events:none; }
+.touch { pointer-events:auto; position:absolute; bottom:24px; width:94px; height:94px; border:1px solid rgba(220,234,232,.16); border-radius:50%; color:#fff; background:rgba(5,7,10,.24); }
+#moveStick { left:18px; }
+#actionButton { right:18px; width:74px; height:74px; bottom:34px; }
+#flashlightButton { right:104px; width:74px; height:74px; bottom:34px; }
+#flashlightState { color:var(--cyan); }
+@media (pointer:coarse), (max-width:700px) {
+  #mobile { display:block; } .topbar { left:16px; right:16px; top:16px; } .objective { left:16px; bottom:132px; }
+  .status { display:none; } .san { width:110px; } h1 { font-size:clamp(58px,20vw,92px); }
+  .instructions { grid-template-columns:1fr; } .intro { font-size:13px; }
+}
